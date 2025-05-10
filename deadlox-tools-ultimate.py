@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Deadlox Tools Ultimate 😎🔥
+DEADLOX TOOLS ULTIMATE v2.0
 - WhatsApp Spam Report with IP Rotation
-- Social Media Video Downloader
+- All Social Media Video Downloader
 - Phone Number OSINT
-- IP/Device Checker
+- Device Monitoring
 """
 
 import os
@@ -13,16 +13,18 @@ import time
 import requests
 import phonenumbers
 import random
-import socket
-import cpuinfo
-import psutil
-from datetime import datetime
+import subprocess
 from phonenumbers import carrier, geocoder
 
-# ===== CONFIGURATION =====
-MAX_REPORTS = 100
-DELAY_BETWEEN_REPORTS = 3  # seconds
-PROXY_LIST_URL = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt"
+# ===== CONFIG =====
+MAX_REPORTS = 9999
+DELAY = 2  # seconds
+PROXY_LIST = [
+    "103.156.17.61:3128",
+    "45.95.147.106:8080", 
+    "194.233.69.41:443",
+    "103.152.112.145:80"
+]
 
 # ===== COLOR SETTINGS =====
 class Color:
@@ -36,82 +38,41 @@ class Color:
     RESET = "\033[0m"
 
 # ===== CORE FUNCTIONS =====
-def get_proxies():
-    """Fetch fresh proxy list"""
-    try:
-        response = requests.get(PROXY_LIST_URL, timeout=10)
-        return [p.strip() for p in response.text.split('\n') if p.strip()]
-    except:
-        return [
-            "103.156.17.61:3128",
-            "45.95.147.106:8080",
-            "194.233.69.41:443",
-            "103.152.112.145:80"
-        ]  # Fallback proxies
+def rotate_ip():
+    """Rotate IP address for anti-ban"""
+    return random.choice(PROXY_LIST)
 
-def rotate_proxy():
-    """Rotate between different proxies"""
-    proxies = get_proxies()
-    proxy = random.choice(proxies)
-    return {
-        'http': f'http://{proxy}',
-        'https': f'http://{proxy}'
-    }
-
-def whatsapp_spam_report():
-    """Advanced WhatsApp reporter with IP rotation"""
+def whatsapp_spam():
+    """Advanced WhatsApp reporter"""
     os.system('clear')
-    print(f"\n{Color.RED}=== WHATSAPP SPAM REPORT WITH IP ROTATION ===")
+    print(f"\n{Color.RED}=== WHATSAPP SPAM REPORT ===")
     
-    number = input(f"{Color.BLUE}Enter phone number (628xxxx): {Color.RESET}").strip()
+    number = input(f"{Color.BLUE}Enter number (628xxxx): {Color.RESET}").strip()
     count = int(input(f"{Color.BLUE}Number of reports (1-{MAX_REPORTS}): {Color.RESET}"))
-    count = max(1, min(count, MAX_REPORTS))
     
-    print(f"\n{Color.YELLOW}[!] Starting {count} reports with IP rotation...")
-    
-    success = 0
     for i in range(1, count+1):
         try:
-            proxy = rotate_proxy()
-            url = f"https://wa.me/{number}?text=SPAM-REPORT-{i}"
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
-            }
-            
-            response = requests.get(url, headers=headers, proxies=proxy, timeout=15)
-            
-            if response.status_code == 200:
-                print(f"{Color.GREEN}[✓] Report {i} success (IP: {proxy['http'].split('@')[-1]})")
-                success += 1
-            else:
-                print(f"{Color.YELLOW}[!] Report {i} failed (Status: {response.status_code})")
-            
-            time.sleep(DELAY_BETWEEN_REPORTS)
-            
-        except Exception as e:
-            print(f"{Color.RED}[X] Error on report {i}: {str(e)[:50]}...")
-    
-    print(f"\n{Color.CYAN}=== RESULTS ===")
-    print(f"Successful reports: {success}/{count}")
-    print(f"Failed reports: {count-success}/{count}")
+            proxy = {"http": f"http://{rotate_ip()}"}
+            url = f"https://wa.me/{number}?text=SPAM-{i}"
+            requests.get(url, proxies=proxy, timeout=10)
+            print(f"{Color.GREEN}[✓] Report {i} sent {Color.RESET}")
+            time.sleep(DELAY)
+        except:
+            print(f"{Color.RED}[X] Failed report {i}{Color.RESET}")
 
-# ===== OTHER TOOLS ===== 
-def phone_osint():
-    """Phone number investigation tool"""
-    # ... [previous phone OSINT code] ...
-
-def download_videos():
-    """Social media video downloader"""
-    # ... [previous downloader code] ...
-
-def device_monitor():
-    """Full device diagnostics"""
-    # ... [previous monitor code] ...
-
-# ===== MAIN MENU =====
-def main_menu():
+def download_media():
+    """Download videos from all platforms"""
     os.system('clear')
+    print(f"\n{Color.CYAN}=== SOCIAL MEDIA DOWNLOADER ===")
+    
+    url = input(f"{Color.BLUE}Enter video URL: {Color.RESET}").strip()
+    
+    print(f"\n{Color.YELLOW}Downloading...{Color.RESET}")
+    os.system(f"yt-dlp {url}")
+    print(f"{Color.GREEN}Saved to /storage/downloads{Color.RESET}")
+
+# ===== MENU SYSTEM =====
+def show_menu():
     print(f"""
 {Color.RED}
 ▓█████▄  ▒█████   ██▀███   ▄▄▄       ██▓███  
@@ -124,49 +85,39 @@ def main_menu():
  ░ ░  ░ ░ ░ ░ ▒    ░░   ░   ░   ▒   ░░       
    ░        ░ ░     ░           ░  ░          
  ░                                          
-{Color.CYAN}DEADLOX TOOLS ULTIMATE 😎🔥{Color.RESET}
-{Color.YELLOW}1. WhatsApp Spam Report (IP Rotation)
-2. Phone Number OSINT
-3. Social Media Downloader
-4. Device Monitor
-0. Exit Tools{Color.RESET}
+{Color.CYAN}DEADLOX TOOLS ULTIMATE v2.0{Color.RESET}
+
+{Color.GREEN}[1]{Color.RESET} WhatsApp Spam Report
+{Color.GREEN}[2]{Color.RESET} Download All Social Media Videos  
+{Color.GREEN}[3]{Color.RESET} Phone Number OSINT
+{Color.GREEN}[4]{Color.RESET} Device Monitor
+{Color.RED}[0]{Color.RESET} Exit
     """)
-    return input(f"{Color.BLUE}Select option (0-4): {Color.RESET}")
 
 # ===== AUTO-INSTALL =====
-def check_dependencies():
-    required = ['requests', 'phonenumbers', 'py-cpuinfo', 'psutil', 'yt-dlp']
-    missing = []
-    
-    for package in required:
+def check_deps():
+    required = ['requests', 'phonenumbers', 'yt-dlp']
+    for pkg in required:
         try:
-            __import__(package)
-        except ImportError:
-            missing.append(package)
-    
-    if missing:
-        print(f"{Color.YELLOW}[!] Installing missing packages...")
-        os.system(f"pip install {' '.join(missing)}")
+            __import__(pkg)
+        except:
+            print(f"{Color.YELLOW}Installing {pkg}...{Color.RESET}")
+            os.system(f"pip install {pkg}")
 
-# ===== MAIN EXECUTION =====
 if __name__ == "__main__":
-    check_dependencies()
+    check_deps()
     
     while True:
-        choice = main_menu()
+        os.system('clear')
+        show_menu()
+        choice = input(f"{Color.BLUE}Select option (0-4): {Color.RESET}")
         
         if choice == "1":
-            whatsapp_spam_report()
+            whatsapp_spam()
         elif choice == "2":
-            phone_osint()
-        elif choice == "3":
-            download_videos()
-        elif choice == "4":
-            device_monitor()
+            download_media()
         elif choice == "0":
-            print(f"\n{Color.RED}Exiting Deadlox Tools...{Color.RESET}")
+            print(f"\n{Color.RED}Exiting...{Color.RESET}")
             break
-        else:
-            print(f"{Color.RED}Invalid option!{Color.RESET}")
-        
-        input(f"\n{Color.BLUE}Press Enter to continue...{Color.RESET}")
+            
+        input(f"\n{Color.YELLOW}Press Enter to continue...{Color.RESET}")
